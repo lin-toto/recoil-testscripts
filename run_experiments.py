@@ -47,14 +47,15 @@ def run_decoding_experiment(experiment_name: str, attempts: int, dataset_name: s
         original_size_bytes = result['original_size_bytes']
 
         if result['result_correct']:
-            logger.info(f"Decode {i}/{attempts}: {result['throughput_mb']} MB/s")
+            logger.info(f"Decode {i+1}/{attempts}: {result['throughput_mb']} MB/s")
         else:
-            logger.error(f"Decode {i}/{attempts}: {result['throughput_mb']} MB/s, result INCORRECT")
+            logger.error(f"Decode {i+1}/{attempts}: {result['throughput_mb']} MB/s, result INCORRECT")
 
         sum_elapsed += result['time']
 
     average_throughput = (original_size_bytes * attempts / (1024 * 1024)) / (sum_elapsed / 1000000)
     logger.info(f"Average throughput: {average_throughput} MB/s")
+    return average_throughput
 
 
 
