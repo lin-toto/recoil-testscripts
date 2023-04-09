@@ -9,9 +9,9 @@ from config import *
 def detect_cpu():
     # If AVX is not supported on this platform, then we'll skip the AVX tests
     avx_version = None
-    if CPUFeature['OS_AVX512'] and ['CPUFeature.AVX512f']:
+    if CPUFeature['AVX512f']:
         avx_version = 512
-    elif CPUFeature['OS_AVX'] and CPUFeature['AVX2']:
+    elif CPUFeature['AVX2']:
         avx_version = 2
 
     core_count = CPUFeature['num_physical_cores']
@@ -24,4 +24,7 @@ def detect_cuda_occupancy():
         return run_program(get_program_path('detect_cuda_occupancy'), [])['occupancy']
     except CalledProcessError as e:
         logger.error("Detecting CUDA max occupancy failed: " + e.stderr)
+        return None
+    except FileNotFoundError:
+        logger.error("CUDA max occupancy detect program is not found")
         return None
