@@ -18,6 +18,6 @@ EXECUTABLES = {
 MULTIANS = '/home/lin/multians/bin/demo'
 
 TEXT_DATASETS = ['enwik9_10m',
-                 #'rand_10m_5', 'rand_10m_20', 'rand_10m_100',
-                 #'enwik9', 'mozilla', 'webster'
+                 'rand_10m_10', 'rand_10m_50', 'rand_10m_100',
+                 'mozilla', 'webster', 'enwik9'
                 ]

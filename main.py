@@ -9,13 +9,13 @@ import shutil
 import csv
 import argparse
 
-ATTEMPTS = 2
+ATTEMPTS = 10
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--no-cuda", help="Do not run CUDA experiments")
-    parser.add_argument("--no-avx", help="Do not run AVX experiments")
+    parser.add_argument("--no-cuda", help="Do not run CUDA experiments", action='store_true')
+    parser.add_argument("--no-avx", help="Do not run AVX experiments", action='store_true')
     parser.add_argument("--nsplit-large", type=int, required=False,
                         help="Force nsplit_large (defaults to max CUDA occupancy)")
     parser.add_argument("--nsplit-small", type=int, required=False,
@@ -29,7 +29,7 @@ def main(workdir: str):
     logger.info("Detecting environment")
 
     num_cpu_threads, avx_version = detect_cpu()
-    logger.info(f"Core Count: {num_cpu_threads}, AVX: {avx_version}")
+    logger.info(f"Core Count: {num_cpu_threads}, AVX{avx_version}")
     if avx_version is None and not args.no_avx:
         logger.error("No AVX2/AVX512 support detected. To disable AVX tests, re-run with --no-avx.")
         sys.exit(1)
@@ -54,23 +54,23 @@ def main(workdir: str):
     compression_csv = open('compression.csv', 'w')
     throughput_csv_writer = csv.writer(throughput_csv)
     compression_csv_writer = csv.writer(compression_csv)
-    throughput_csv_writer.writerow(['', f'Interleaved rANS AVX{avx_version}', 'Recoil CUDA', f"Recoil AVX{avx_version}",
-                                    "Conventional CUDA", f"Conventional AVX{avx_version}", "multians"])
-    compression_csv_writer.writerow(['', 'Uncompressed Size', 'Interleaved rANS', 'Recoil Large', 'Recoil Small',
-                                     'Conventional Large', 'Conventional Small', 'multians'])
+    throughput_csv_writer.writerow(['', f'Interleaved rANS AVX{avx_version}', f"Recoil AVX{avx_version}", f"Conventional AVX{avx_version}",
+                                    "multians", 'Recoil CUDA', "Conventional CUDA"])
+    compression_csv_writer.writerow(['', 'Uncompressed Size', 'Interleaved rANS', 'Recoil Small', 'Conventional Small',
+                                     'multians', 'Recoil Large', 'Conventional Large'])
 
     for dataset in TEXT_DATASETS:
         throughput = OrderedDict({
-            '_placeholder': '',
-            'interleaved': 0, 'recoil_cuda': 0, 'recoil_avx': 0,
-            'conv_cuda': 0, 'conv_avx': 0, 'multians': 0
+            'name': dataset,
+            'interleaved': 0, 'recoil_avx': 0, 'conv_avx': 0,
+            'multians': 0, 'recoil_cuda': 0, 'conv_cuda': 0,
         })
 
         compression = OrderedDict({
-            '_placeholder': '',
+            'name': dataset,
             'uncompressed': 0,
-            'interleaved': 0, 'recoil_large': 0, 'recoil_small': 0,
-            'conv_large': 0, 'conv_small': 0, 'multians': 0
+            'interleaved': 0, 'recoil_small': 0, 'conv_small': 0,
+            'multians': 0, 'recoil_large': 0, 'conv_large': 0,
         })
 
         logger.info(f"Encoding dataset {dataset}")
