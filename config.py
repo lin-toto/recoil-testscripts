@@ -15,5 +15,9 @@ EXECUTABLES = {
     'decode_textfile_conventional_cuda': '18_decode_textfile_symbolsplit_cuda/decode_textfile_symbolsplit_cuda',
 }
 
-TEXT_DATASETS = ['enwik9_10m', 'rand_10m_5', 'rand_10m_20', 'rand_10m_100',
-                 'enwik9', 'mozilla', 'webster']
+MULTIANS = '/home/lin/multians/bin/demo'
+
+TEXT_DATASETS = ['enwik9_10m',
+                 #'rand_10m_5', 'rand_10m_20', 'rand_10m_100',
+                 #'enwik9', 'mozilla', 'webster'
+                ]
