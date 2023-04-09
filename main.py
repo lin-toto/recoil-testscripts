@@ -54,16 +54,16 @@ def main(workdir: str):
     compression_csv = open('compression.csv', 'w')
     throughput_csv_writer = csv.writer(throughput_csv)
     compression_csv_writer = csv.writer(compression_csv)
-    throughput_csv_writer.writerow(['', f'Interleaved rANS AVX{avx_version}', f"Recoil AVX{avx_version}", f"Conventional AVX{avx_version}",
-                                    "multians", 'Recoil CUDA', "Conventional CUDA"])
-    compression_csv_writer.writerow(['', 'Uncompressed Size', 'Interleaved rANS', 'Recoil Small', 'Conventional Small',
-                                     'multians', 'Recoil Large', 'Conventional Large'])
+    throughput_csv_writer.writerow(['', f'Interleaved rANS AVX{avx_version}', f"Conventional AVX{avx_version}", f"Recoil AVX{avx_version}",
+                                    "multians", 'Conventional CUDA', "Recoil CUDA"])
+    compression_csv_writer.writerow(['', 'Uncompressed Size', 'Interleaved rANS', 'Conventional Small', 'Recoil Small',
+                                     'multians', 'Conventional Large', 'Recoil Large'])
 
     for dataset in TEXT_DATASETS:
         throughput = OrderedDict({
             'name': dataset,
-            'interleaved': 0, 'recoil_avx': 0, 'conv_avx': 0,
-            'multians': 0, 'recoil_cuda': 0, 'conv_cuda': 0,
+            'interleaved': 0, 'conv_avx': 0, 'recoil_avx': 0,
+            'multians': 0, 'conv_cuda': 0, 'recoil_cuda': 0,
         })
 
         compression = OrderedDict({
