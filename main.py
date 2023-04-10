@@ -69,8 +69,8 @@ def main(workdir: str):
         compression = OrderedDict({
             'name': dataset,
             'uncompressed': 0,
-            'interleaved': 0, 'recoil_small': 0, 'conv_small': 0,
-            'multians': 0, 'recoil_large': 0, 'conv_large': 0,
+            'interleaved': 0, 'conv_small': 0, 'recoil_small': 0,
+            'multians': 0, 'conv_large': 0, 'recoil_large': 0
         })
 
         logger.info(f"Encoding dataset {dataset}")
@@ -111,7 +111,6 @@ def main(workdir: str):
                 'decode_textfile_conventional_cuda', ATTEMPTS, dataset, conv_large_bitstream_path)
 
             logger.info(f"Running multians")
-
             compression['multians'], throughput['multians'] = run_multians(ATTEMPTS, dataset)
 
         throughput_csv_writer.writerow(throughput.values())
