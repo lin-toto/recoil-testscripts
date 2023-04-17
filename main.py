@@ -23,6 +23,73 @@ def parse_args():
     return parser.parse_args()
 
 
+def run_experiment(dataset: str, dataset_type: str,
+                   nsplit_large: int, nsplit_small: int, throughput_csv_writer, compression_csv_writer, args):
+    throughput = OrderedDict({
+        'name': dataset,
+        'interleaved': 0, 'conv_avx': 0, 'recoil_avx': 0,
+        'multians': 0, 'conv_cuda': 0, 'recoil_cuda': 0,
+    })
+
+    compression = OrderedDict({
+        'name': dataset,
+        'uncompressed': 0,
+        'interleaved': 0, 'conv_small': 0, 'recoil_small': 0,
+        'multians': 0, 'conv_large': 0, 'recoil_large': 0
+    })
+
+    logger.info(f"Encoding dataset {dataset}")
+
+    rans_bitstream_path = os.path.join(workdir, dataset + '.bin')
+    recoil_large_bitstream_path = os.path.join(workdir, dataset + '_large.bin')
+    recoil_small_bitstream_path = os.path.join(workdir, dataset + '_small.bin')
+    conv_large_bitstream_path = os.path.join(workdir, dataset + '_large_conventional.bin')
+    conv_small_bitstream_path = os.path.join(workdir, dataset + '_small_conventional.bin')
+
+    if dataset_type != 'lic':
+        fn_enc = run_encoding
+        fn_dec = run_decoding_experiment
+    else:
+        fn_enc = run_lic_encoding
+        fn_dec = run_lic_decoding_experiment
+
+    compression['uncompressed'], compression['interleaved'] = fn_enc(
+        f'encode_{dataset_type}', dataset, 1, rans_bitstream_path)
+
+    _, compression['recoil_large'] = fn_enc(
+        f'encode_{dataset_type}', dataset, nsplit_large, recoil_large_bitstream_path)
+    _, compression['conv_large'] = fn_enc(
+        f'encode_{dataset_type}_conventional', dataset, nsplit_large, conv_large_bitstream_path)
+
+    compression['recoil_small'] = run_splits_combine(
+        dataset, recoil_large_bitstream_path, nsplit_small, recoil_small_bitstream_path)
+    _, compression['conv_small'] = fn_enc(
+        f'encode_{dataset_type}_conventional', dataset, nsplit_small, conv_small_bitstream_path)
+
+    logger.info(f"Decoding dataset {dataset}")
+
+    if not args.no_avx:
+        throughput['interleaved'] = fn_dec(
+            f'decode_{dataset_type}_avx', ATTEMPTS, dataset, rans_bitstream_path)
+        throughput['recoil_avx'] = fn_dec(
+            f'decode_{dataset_type}_avx', ATTEMPTS, dataset, recoil_small_bitstream_path, recoil_large_bitstream_path + '.cdf')
+        throughput['conv_avx'] = fn_dec(
+            f'decode_{dataset_type}_conventional_avx', ATTEMPTS, dataset, conv_small_bitstream_path)
+
+    if not args.no_cuda:
+        throughput['recoil_cuda'] = fn_dec(
+            f'decode_{dataset_type}_cuda', ATTEMPTS, dataset, recoil_large_bitstream_path)
+        throughput['conv_cuda'] = fn_dec(
+            f'decode_{dataset_type}_conventional_cuda', ATTEMPTS, dataset, conv_large_bitstream_path)
+
+        if dataset_type != 'lic':
+            logger.info(f"Running multians")
+            compression['multians'], throughput['multians'] = run_multians(ATTEMPTS, dataset)
+
+    throughput_csv_writer.writerow(throughput.values())
+    compression_csv_writer.writerow(compression.values())
+
+
 def main(workdir: str):
     args = parse_args()
 
@@ -60,61 +127,10 @@ def main(workdir: str):
                                      'multians', 'Conventional Large', 'Recoil Large'])
 
     for dataset in TEXT_DATASETS:
-        throughput = OrderedDict({
-            'name': dataset,
-            'interleaved': 0, 'conv_avx': 0, 'recoil_avx': 0,
-            'multians': 0, 'conv_cuda': 0, 'recoil_cuda': 0,
-        })
+        run_experiment(dataset, 'textfile', nsplit_large, nsplit_small, throughput_csv_writer, compression_csv_writer, args)
 
-        compression = OrderedDict({
-            'name': dataset,
-            'uncompressed': 0,
-            'interleaved': 0, 'conv_small': 0, 'recoil_small': 0,
-            'multians': 0, 'conv_large': 0, 'recoil_large': 0
-        })
-
-        logger.info(f"Encoding dataset {dataset}")
-
-        rans_bitstream_path = os.path.join(workdir, dataset + '.bin')
-        recoil_large_bitstream_path = os.path.join(workdir, dataset + '_large.bin')
-        recoil_small_bitstream_path = os.path.join(workdir, dataset + '_small.bin')
-        conv_large_bitstream_path = os.path.join(workdir, dataset + '_large_conventional.bin')
-        conv_small_bitstream_path = os.path.join(workdir, dataset + '_small_conventional.bin')
-
-        compression['uncompressed'], compression['interleaved'] = run_encoding(
-            'encode_textfile', dataset, 1, rans_bitstream_path)
-
-        _, compression['recoil_large'] = run_encoding(
-            'encode_textfile', dataset, nsplit_large, recoil_large_bitstream_path)
-        _, compression['conv_large'] = run_encoding(
-            'encode_textfile_conventional', dataset, nsplit_large, conv_large_bitstream_path)
-
-        compression['recoil_small'] = run_splits_combine(
-            dataset, recoil_large_bitstream_path, nsplit_small, recoil_small_bitstream_path)
-        _, compression['conv_small'] = run_encoding(
-            'encode_textfile_conventional', dataset, nsplit_small, conv_small_bitstream_path)
-
-        logger.info(f"Decoding dataset {dataset}")
-
-        if not args.no_avx:
-            throughput['interleaved'] = run_decoding_experiment(
-                'decode_textfile_avx', ATTEMPTS, dataset, rans_bitstream_path)
-            throughput['recoil_avx'] = run_decoding_experiment(
-                'decode_textfile_avx', ATTEMPTS, dataset, recoil_small_bitstream_path, recoil_large_bitstream_path + '.cdf')
-            throughput['conv_avx'] = run_decoding_experiment(
-                'decode_textfile_conventional_avx', ATTEMPTS, dataset, conv_small_bitstream_path)
-
-        if not args.no_cuda:
-            throughput['recoil_cuda'] = run_decoding_experiment(
-                'decode_textfile_cuda', ATTEMPTS, dataset, recoil_large_bitstream_path)
-            throughput['conv_cuda'] = run_decoding_experiment(
-                'decode_textfile_conventional_cuda', ATTEMPTS, dataset, conv_large_bitstream_path)
-
-            logger.info(f"Running multians")
-            compression['multians'], throughput['multians'] = run_multians(ATTEMPTS, dataset)
-
-        throughput_csv_writer.writerow(throughput.values())
-        compression_csv_writer.writerow(compression.values())
+    for dataset in LIC_DATASETS:
+        run_experiment(dataset, 'lic', nsplit_large, nsplit_small, throughput_csv_writer, compression_csv_writer, args)
 
     throughput_csv.close()
     compression_csv.close()
