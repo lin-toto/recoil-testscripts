@@ -25,7 +25,10 @@ else
   make -C ./recoil-bin-n16-avx512 "$MAKEFLAGS"
 fi
 
+make clean -C ./multians
 make NUM_STATES=1024 -C ./multians "$MAKEFLAGS"
 cp ./multians/bin/multians ./multians-n11
+
+make clean -C ./multians
 make NUM_STATES=32768 -C ./multians "$MAKEFLAGS"
 cp ./multians/bin/multians ./multians-n16
