@@ -6,8 +6,8 @@ from loguru import logger
 from config import *
 
 
-def get_program_path(key: str) -> str:
-    return os.path.join(EXECUTABLE_ROOT, EXECUTABLES[key])
+def get_program_path(n: int, avx_version: int, key: str) -> str:
+    return os.path.join(EXECUTABLE_ROOT, f"recoil-bin-n{n}-avx{avx_version}", EXECUTABLES[key])
 
 def run_program(executable: str, args: List[str]) -> dict:
     output = subprocess.check_output([executable] + args).strip()
@@ -17,8 +17,8 @@ def run_program(executable: str, args: List[str]) -> dict:
         return json.loads(output)
 
 
-def run_encoding(encoder_name: str, dataset_name: str, n_splits: int, bitstream_file: str):
-    executable = get_program_path(encoder_name)
+def run_encoding(n: int, encoder_name: str, dataset_name: str, n_splits: int, bitstream_file: str):
+    executable = get_program_path(n, 2, encoder_name)
     dataset_path = os.path.join(DATASET_ROOT, dataset_name)
 
     logger.info(f"Using {encoder_name} to encode {dataset_name} into {n_splits} splits")
@@ -27,8 +27,8 @@ def run_encoding(encoder_name: str, dataset_name: str, n_splits: int, bitstream_
     return os.path.getsize(dataset_path), os.path.getsize(bitstream_file)
 
 
-def run_lic_encoding(encoder_name: str, dataset_name: str, n_splits: int, bitstream_file: str):
-    executable = get_program_path(encoder_name)
+def run_lic_encoding(n: int, encoder_name: str, dataset_name: str, n_splits: int, bitstream_file: str):
+    executable = get_program_path(n, 2, encoder_name)
     dataset_path = os.path.join(DATASET_ROOT, dataset_name + ".txt")
     indexes_path = os.path.join(DATASET_ROOT, dataset_name + "_indexes.txt")
 
@@ -37,8 +37,8 @@ def run_lic_encoding(encoder_name: str, dataset_name: str, n_splits: int, bitstr
     logger.info(f"Encoded {result['original_size_bytes']} bytes into {os.path.getsize(bitstream_file)} bytes")
     return result['original_size_bytes'], os.path.getsize(bitstream_file)
 
-def run_splits_combine(dataset_name: str, bitstream_file: str, n_splits: int, new_bitstream_file: str):
-    executable = get_program_path('combine_encoded_splits')
+def run_splits_combine(n: int, dataset_name: str, bitstream_file: str, n_splits: int, new_bitstream_file: str):
+    executable = get_program_path(n, 2, 'combine_encoded_splits')
 
     logger.info(f"Combine encoded {dataset_name} into {n_splits} splits")
     run_program(executable, [bitstream_file, str(n_splits), new_bitstream_file])
@@ -46,13 +46,13 @@ def run_splits_combine(dataset_name: str, bitstream_file: str, n_splits: int, ne
     return os.path.getsize(new_bitstream_file)
 
 
-def run_decoding_experiment(experiment_name: str, attempts: int, dataset_name: str, bitstream_file: str, cdf_file: str = None):
-    executable = get_program_path(experiment_name)
+def run_decoding_experiment(n: int, avx_version: int, experiment_name: str, attempts: int, dataset_name: str, bitstream_file: str, cdf_file: str = None):
+    executable = get_program_path(n, avx_version, experiment_name)
     dataset_path = os.path.join(DATASET_ROOT, dataset_name)
     if cdf_file is None:
         cdf_file = bitstream_file + ".cdf"
 
-    logger.info(f"Running {experiment_name} on {dataset_name} for {attempts} attempts")
+    logger.info(f"Running {experiment_name} (AVX{avx_version}) on {dataset_name} for {attempts} attempts")
 
     sum_elapsed = 0
     original_size_bytes = 0
@@ -72,12 +72,12 @@ def run_decoding_experiment(experiment_name: str, attempts: int, dataset_name: s
     return average_throughput
 
 
-def run_lic_decoding_experiment(experiment_name: str, attempts: int, dataset_name: str, bitstream_file: str, cdf_file: str = None):
-    executable = get_program_path(experiment_name)
+def run_lic_decoding_experiment(n: int, avx_version: int, experiment_name: str, attempts: int, dataset_name: str, bitstream_file: str, cdf_file: str = None):
+    executable = get_program_path(n, avx_version, experiment_name)
     dataset_path = os.path.join(DATASET_ROOT, dataset_name + ".txt")
     indexes_path = os.path.join(DATASET_ROOT, dataset_name + "_indexes.txt")
 
-    logger.info(f"Running {experiment_name} on {dataset_name} for {attempts} attempts")
+    logger.info(f"Running {experiment_name} (AVX{avx_version}) on {dataset_name} for {attempts} attempts")
 
     sum_elapsed = 0
     original_size_bytes = 0

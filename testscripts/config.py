@@ -1,5 +1,5 @@
-EXECUTABLE_ROOT = '/tmp/tmp.O7EvR8yCgW/cmake-build-release-server/examples'
-DATASET_ROOT = '/home/dataset'
+EXECUTABLE_ROOT = '/work'
+DATASET_ROOT = '/work/dataset'
 
 EXECUTABLES = {
     'combine_encoded_splits': '01_combine_encoded_splits/combine_encoded_splits',
@@ -24,7 +24,7 @@ EXECUTABLES = {
 }
 
 MULTIANS = '/home/lin/multians/bin/demo'
-MBT2018_CDF = '/home/dataset/mbt2018_cdf.txt'
+MBT2018_CDF = DATASET_ROOT + '/mbt2018_cdf.txt'
 
 TEXT_DATASETS = [#'rand_10m_10', 'rand_10m_50', 'rand_10m_100',
                  #'mozilla', 'webster', 'enwik9',

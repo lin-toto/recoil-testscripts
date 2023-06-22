@@ -14,6 +14,7 @@ ATTEMPTS = 10
 
 def parse_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument("-n", type=int, default=11, help="Probability quantization level")
     parser.add_argument("--no-cuda", help="Do not run CUDA experiments", action='store_true')
     parser.add_argument("--no-avx", help="Do not run AVX experiments", action='store_true')
     parser.add_argument("--nsplit-large", type=int, required=False,
@@ -23,11 +24,12 @@ def parse_args():
     return parser.parse_args()
 
 
-def run_experiment(dataset: str, dataset_type: str,
+def run_experiment(workdir: str, dataset: str, dataset_type: str,
                    nsplit_large: int, nsplit_small: int, throughput_csv_writer, compression_csv_writer, args):
     throughput = OrderedDict({
         'name': dataset,
-        'interleaved': 0, 'conv_avx': 0, 'recoil_avx': 0,
+        'interleaved_avx512': 0, 'conv_avx512': 0, 'recoil_avx512': 0,
+        'interleaved_avx2': 0, 'conv_avx2': 0, 'recoil_avx2': 0,
         'multians': 0, 'conv_cuda': 0, 'recoil_cuda': 0,
     })
 
@@ -54,33 +56,43 @@ def run_experiment(dataset: str, dataset_type: str,
         fn_dec = run_lic_decoding_experiment
 
     compression['uncompressed'], compression['interleaved'] = fn_enc(
-        f'encode_{dataset_type}', dataset, 1, rans_bitstream_path)
+        args.n, f'encode_{dataset_type}', dataset, 1, rans_bitstream_path)
 
     _, compression['recoil_large'] = fn_enc(
-        f'encode_{dataset_type}', dataset, nsplit_large, recoil_large_bitstream_path)
+        args.n, f'encode_{dataset_type}', dataset, nsplit_large, recoil_large_bitstream_path)
     _, compression['conv_large'] = fn_enc(
-        f'encode_{dataset_type}_conventional', dataset, nsplit_large, conv_large_bitstream_path)
+        args.n, f'encode_{dataset_type}_conventional', dataset, nsplit_large, conv_large_bitstream_path)
 
     compression['recoil_small'] = run_splits_combine(
-        dataset, recoil_large_bitstream_path, nsplit_small, recoil_small_bitstream_path)
+        args.n, dataset, recoil_large_bitstream_path, nsplit_small, recoil_small_bitstream_path)
     _, compression['conv_small'] = fn_enc(
-        f'encode_{dataset_type}_conventional', dataset, nsplit_small, conv_small_bitstream_path)
+        args.n, f'encode_{dataset_type}_conventional', dataset, nsplit_small, conv_small_bitstream_path)
 
     logger.info(f"Decoding dataset {dataset}")
 
     if not args.no_avx:
-        throughput['interleaved'] = fn_dec(
-            f'decode_{dataset_type}_avx', ATTEMPTS, dataset, rans_bitstream_path)
-        throughput['recoil_avx'] = fn_dec(
-            f'decode_{dataset_type}_avx', ATTEMPTS, dataset, recoil_small_bitstream_path, recoil_large_bitstream_path + '.cdf')
-        throughput['conv_avx'] = fn_dec(
-            f'decode_{dataset_type}_conventional_avx', ATTEMPTS, dataset, conv_small_bitstream_path)
+        if args.avx_version == 512:
+            throughput['interleaved_avx512'] = fn_dec(
+                args.n, 512, f'decode_{dataset_type}_avx', ATTEMPTS, dataset, rans_bitstream_path)
+            throughput['recoil_avx512'] = fn_dec(
+                args.n, 512, f'decode_{dataset_type}_avx', ATTEMPTS, dataset, recoil_small_bitstream_path,
+                recoil_large_bitstream_path + '.cdf')
+            throughput['conv_avx512'] = fn_dec(
+                args.n, 512, f'decode_{dataset_type}_conventional_avx', ATTEMPTS, dataset, conv_small_bitstream_path)
+
+        throughput['interleaved_avx2'] = fn_dec(
+            args.n, 2, f'decode_{dataset_type}_avx', ATTEMPTS, dataset, rans_bitstream_path)
+        throughput['recoil_avx2'] = fn_dec(
+            args.n, 2, f'decode_{dataset_type}_avx', ATTEMPTS, dataset, recoil_small_bitstream_path,
+            recoil_large_bitstream_path + '.cdf')
+        throughput['conv_avx2'] = fn_dec(
+            args.n, 2, f'decode_{dataset_type}_conventional_avx', ATTEMPTS, dataset, conv_small_bitstream_path)
 
     if not args.no_cuda:
         throughput['recoil_cuda'] = fn_dec(
-            f'decode_{dataset_type}_cuda', ATTEMPTS, dataset, recoil_large_bitstream_path)
+            args.n, 2,f'decode_{dataset_type}_cuda', ATTEMPTS, dataset, recoil_large_bitstream_path)
         throughput['conv_cuda'] = fn_dec(
-            f'decode_{dataset_type}_conventional_cuda', ATTEMPTS, dataset, conv_large_bitstream_path)
+            args.n, 2,f'decode_{dataset_type}_conventional_cuda', ATTEMPTS, dataset, conv_large_bitstream_path)
 
         if dataset_type != 'lic':
             logger.info(f"Running multians")
@@ -100,6 +112,7 @@ def main(workdir: str):
     if avx_version is None and not args.no_avx:
         logger.error("No AVX2/AVX512 support detected. To disable AVX tests, re-run with --no-avx.")
         sys.exit(1)
+    args.avx_version = avx_version
 
     cuda_occupancy = detect_cuda_occupancy()
     logger.info(f"CUDA max occupancy: {cuda_occupancy}")
@@ -121,16 +134,18 @@ def main(workdir: str):
     compression_csv = open('compression.csv', 'w')
     throughput_csv_writer = csv.writer(throughput_csv)
     compression_csv_writer = csv.writer(compression_csv)
-    throughput_csv_writer.writerow(['', f'Interleaved rANS AVX{avx_version}', f"Conventional AVX{avx_version}", f"Recoil AVX{avx_version}",
+    throughput_csv_writer.writerow(['',
+                                    'Interleaved rANS AVX512', "Conventional AVX512", "Recoil AVX512",
+                                    'Interleaved rANS AVX2', "Conventional AVX2", "Recoil AVX2",
                                     "multians", 'Conventional CUDA', "Recoil CUDA"])
     compression_csv_writer.writerow(['', 'Uncompressed Size', 'Interleaved rANS', 'Conventional Small', 'Recoil Small',
                                      'multians', 'Conventional Large', 'Recoil Large'])
 
     for dataset in TEXT_DATASETS:
-        run_experiment(dataset, 'textfile', nsplit_large, nsplit_small, throughput_csv_writer, compression_csv_writer, args)
+        run_experiment(workdir, dataset, 'textfile', nsplit_large, nsplit_small, throughput_csv_writer, compression_csv_writer, args)
 
     for dataset in LIC_DATASETS:
-        run_experiment(dataset, 'lic', nsplit_large, nsplit_small, throughput_csv_writer, compression_csv_writer, args)
+        run_experiment(workdir, dataset, 'lic', nsplit_large, nsplit_small, throughput_csv_writer, compression_csv_writer, args)
 
     throughput_csv.close()
     compression_csv.close()
