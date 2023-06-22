@@ -52,7 +52,8 @@ def run_decoding_experiment(n: int, avx_version: int, experiment_name: str, atte
     if cdf_file is None:
         cdf_file = bitstream_file + ".cdf"
 
-    logger.info(f"Running {experiment_name} (AVX{avx_version}) on {dataset_name} for {attempts} attempts")
+    platform = "CUDA" if experiment_name.endswith("cuda") else f"AVX{avx_version}"
+    logger.info(f"Running {experiment_name} ({platform}) on {dataset_name} for {attempts} attempts")
 
     sum_elapsed = 0
     original_size_bytes = 0
@@ -77,7 +78,8 @@ def run_lic_decoding_experiment(n: int, avx_version: int, experiment_name: str, 
     dataset_path = os.path.join(DATASET_ROOT, dataset_name + ".txt")
     indexes_path = os.path.join(DATASET_ROOT, dataset_name + "_indexes.txt")
 
-    logger.info(f"Running {experiment_name} (AVX{avx_version}) on {dataset_name} for {attempts} attempts")
+    platform = "CUDA" if experiment_name.endswith("cuda") else f"AVX{avx_version}"
+    logger.info(f"Running {experiment_name} ({platform}) on {dataset_name} for {attempts} attempts")
 
     sum_elapsed = 0
     original_size_bytes = 0
