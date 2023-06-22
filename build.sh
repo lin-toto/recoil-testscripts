@@ -1,10 +1,5 @@
 #!/bin/bash
 
-make NUM_STATES=1024 -C ./multians
-cp ./multians/bin/multians ./multians-n11
-make NUM_STATES=32768 -C ./multians
-cp ./multians/bin/multians ./multians-n16
-
 AVX2=$(lscpu|grep avx2)
 if [ -z "$AVX2" ]; then
   echo "No AVX2 support detected, cannot build! \n"
@@ -27,3 +22,8 @@ else
   cmake -DFLAGS="-DPROB_BITS=16 -DAVX512" -S ./recoil -B ./recoil-bin-n16-avx512 -DCMAKE_BUILD_TYPE=Release
   make -C ./recoil-bin-n16-avx512
 fi
+
+make NUM_STATES=1024 -C ./multians
+cp ./multians/bin/multians ./multians-n11
+make NUM_STATES=32768 -C ./multians
+cp ./multians/bin/multians ./multians-n16

@@ -1,5 +1,6 @@
 EXECUTABLE_ROOT = '/work'
 DATASET_ROOT = '/work/dataset'
+RESULT_ROOT = '/work/result'
 
 EXECUTABLES = {
     'combine_encoded_splits': '01_combine_encoded_splits/combine_encoded_splits',
@@ -26,9 +27,7 @@ EXECUTABLES = {
 MULTIANS = '/work/multians' # will call multians-n11 and multians-n16
 MBT2018_CDF = DATASET_ROOT + '/mbt2018_cdf.txt'
 
-TEXT_DATASETS = [#'rand_10m_10', 'rand_10m_50', 'rand_10m_100',
-                 #'mozilla', 'webster', 'enwik9',
-                 #'dickens', 'enwik8'
-                ]
+TEXT_DATASETS = ['rand_10', 'rand_50', 'rand_100', 'rand_200', 'rand_500',
+                 'dickens', 'webster', 'enwik8', 'enwik9']
 
 LIC_DATASETS = ['div2k801', 'div2k803', 'div2k805']

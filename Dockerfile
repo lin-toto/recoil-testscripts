@@ -27,10 +27,15 @@ RUN apt-get -y install build-essential wget \
 RUN apt-get -y install python3-pip
 
 ADD ./build.sh /work/build.sh
+ADD ./runall.sh /work/runall.sh
+ADD ./fetch_dataset.sh /work/fetch_dataset.sh
+ADD ./dataset /work/dataset
 ADD ./recoil /work/recoil
 ADD ./multians /work/multians
 ADD ./testscripts /work/testscripts
 
-RUN pip install -r /work/testscripts/requirements.txt
+RUN chmod +x /work/fetch_dataset.sh && /work/fetch_dataset.sh
 
 RUN chmod +x /work/build.sh && /work/build.sh
+
+RUN pip install -r /work/testscripts/requirements.txt

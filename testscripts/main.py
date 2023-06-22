@@ -129,9 +129,9 @@ def main(workdir: str):
 
     logger.info(f"Using {nsplit_large} splits for Recoil encoding, then combining to {nsplit_small} splits")
 
-    logger.info(f"Opening throughput.csv and compression.csv for writing")
-    throughput_csv = open('throughput.csv', 'w')
-    compression_csv = open('compression.csv', 'w')
+    logger.info(f"Opening result files for writing")
+    throughput_csv = open(os.path.join(RESULT_ROOT, f"throughput-n{args.n}.csv"), 'w')
+    compression_csv = open(os.path.join(RESULT_ROOT, f"compression-n{args.n}.csv"), 'w')
     throughput_csv_writer = csv.writer(throughput_csv)
     compression_csv_writer = csv.writer(compression_csv)
     throughput_csv_writer.writerow(['',

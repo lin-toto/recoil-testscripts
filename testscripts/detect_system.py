@@ -21,9 +21,9 @@ def detect_cpu():
 
 def detect_cuda_occupancy():
     try:
-        return run_program(get_program_path('detect_cuda_occupancy'), [])['occupancy']
+        return run_program(get_program_path(11, 2, 'detect_cuda_occupancy'), [])['occupancy']
     except CalledProcessError as e:
-        logger.error("Detecting CUDA max occupancy failed: " + e.stderr)
+        logger.error("Detecting CUDA max occupancy failed: " + str(e.stderr))
         return None
     except FileNotFoundError:
         logger.error("CUDA max occupancy detect program is not found")

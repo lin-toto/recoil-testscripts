@@ -7,7 +7,7 @@ from config import *
 
 
 def get_program_path(n: int, avx_version: int, key: str) -> str:
-    return os.path.join(EXECUTABLE_ROOT, f"recoil-bin-n{n}-avx{avx_version}", EXECUTABLES[key])
+    return os.path.join(EXECUTABLE_ROOT, f"recoil-bin-n{n}-avx{avx_version}/examples", EXECUTABLES[key])
 
 def run_program(executable: str, args: List[str]) -> dict:
     output = subprocess.check_output([executable] + args).strip()
