@@ -96,7 +96,7 @@ def run_experiment(workdir: str, dataset: str, dataset_type: str,
 
         if dataset_type != 'lic':
             logger.info(f"Running multians")
-            compression['multians'], throughput['multians'] = run_multians(ATTEMPTS, dataset)
+            compression['multians'], throughput['multians'] = run_multians(args.n, ATTEMPTS, dataset)
 
     throughput_csv_writer.writerow(throughput.values())
     compression_csv_writer.writerow(compression.values())
