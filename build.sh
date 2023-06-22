@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MAKEFLAGS=""
+MAKEFLAGS="-j1"
 
 AVX2=$(lscpu|grep avx2)
 if [ -z "$AVX2" ]; then
