@@ -15,7 +15,7 @@ RUN add-apt-repository ppa:ubuntu-toolchain-r/test \
 	&& update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++ 30 \
     && update-alternatives --set c++ /usr/bin/g++
 
-RUN apt-get -y install build-essential wget \
+RUN apt-get -y install build-essential wget unzip \
   && wget https://github.com/Kitware/CMake/releases/download/v3.24.1/cmake-3.24.1-Linux-x86_64.sh \
       -q -O /tmp/cmake-install.sh \
       && chmod u+x /tmp/cmake-install.sh \
