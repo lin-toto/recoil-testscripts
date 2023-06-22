@@ -1,6 +1,8 @@
-EXECUTABLE_ROOT = '/work'
-DATASET_ROOT = '/work/dataset'
-RESULT_ROOT = '/work/result'
+ROOT = '/work'
+
+EXECUTABLE_ROOT = ROOT
+DATASET_ROOT = ROOT + '/dataset'
+RESULT_ROOT = ROOT + '/result'
 
 EXECUTABLES = {
     'combine_encoded_splits': '01_combine_encoded_splits/combine_encoded_splits',
@@ -21,10 +23,9 @@ EXECUTABLES = {
     'decode_lic_cuda': '26_decode_lic_split_cuda/decode_lic_split_cuda',
     'decode_lic_conventional_avx': '27_decode_lic_symbolsplit/decode_lic_symbolsplit',
     'decode_lic_conventional_cuda': '28_decode_lic_symbolsplit_cuda/decode_lic_symbolsplit_cuda',
-
 }
 
-MULTIANS = '/work/multians' # will call multians-n11 and multians-n16
+MULTIANS = ROOT + '/multians' # will call multians-n11 and multians-n16
 MBT2018_CDF = DATASET_ROOT + '/mbt2018_cdf.txt'
 
 TEXT_DATASETS = ['rand_10', 'rand_50', 'rand_100', 'rand_200', 'rand_500',
