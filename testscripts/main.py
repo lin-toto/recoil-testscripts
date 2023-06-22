@@ -15,6 +15,7 @@ ATTEMPTS = 10
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", type=int, default=11, help="Probability quantization level")
+    parser.add_argument("--no-lic", help="Do not run LIC experiments", action='store_true')
     parser.add_argument("--no-cuda", help="Do not run CUDA experiments", action='store_true')
     parser.add_argument("--no-avx", help="Do not run AVX experiments", action='store_true')
     parser.add_argument("--nsplit-large", type=int, required=False,
@@ -144,8 +145,9 @@ def main(workdir: str):
     for dataset in TEXT_DATASETS:
         run_experiment(workdir, dataset, 'textfile', nsplit_large, nsplit_small, throughput_csv_writer, compression_csv_writer, args)
 
-    for dataset in LIC_DATASETS:
-        run_experiment(workdir, dataset, 'lic', nsplit_large, nsplit_small, throughput_csv_writer, compression_csv_writer, args)
+    if not args.no_lic:
+        for dataset in LIC_DATASETS:
+            run_experiment(workdir, dataset, 'lic', nsplit_large, nsplit_small, throughput_csv_writer, compression_csv_writer, args)
 
     throughput_csv.close()
     compression_csv.close()
