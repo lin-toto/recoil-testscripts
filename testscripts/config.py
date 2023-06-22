@@ -23,7 +23,7 @@ EXECUTABLES = {
 
 }
 
-MULTIANS = '/home/lin/multians/bin/demo'
+MULTIANS = '/work/multians' # will call multians-n11 and multians-n16
 MBT2018_CDF = DATASET_ROOT + '/mbt2018_cdf.txt'
 
 TEXT_DATASETS = [#'rand_10m_10', 'rand_10m_50', 'rand_10m_100',

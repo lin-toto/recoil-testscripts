@@ -28,6 +28,7 @@ RUN apt-get -y install python3-pip
 
 ADD ./build.sh /work/build.sh
 ADD ./recoil /work/recoil
+ADD ./multians /work/multians
 ADD ./testscripts /work/testscripts
 
 RUN pip install -r /work/testscripts/requirements.txt

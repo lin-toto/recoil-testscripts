@@ -97,8 +97,8 @@ def run_lic_decoding_experiment(n: int, avx_version: int, experiment_name: str, 
     return average_throughput
 
 
-def run_multians(attempts: int, dataset_name: str):
-    executable = MULTIANS
+def run_multians(n: int, attempts: int, dataset_name: str):
+    executable = MULTIANS + f"-n{n}"
     dataset_path = os.path.join(DATASET_ROOT, dataset_name)
 
     logger.info(f"Running multians on {dataset_name} for {attempts} attempts")
