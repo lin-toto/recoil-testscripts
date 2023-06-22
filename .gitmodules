@@ -1,3 +1,6 @@
 [submodule "recoil"]
 	path = recoil
 	url = https://github.com/lin-toto/recoil
+[submodule "multians"]
+	path = multians
+	url = https://github.com/lin-toto/multians
