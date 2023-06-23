@@ -41,4 +41,4 @@ RUN chmod +x /work/build.sh && /work/build.sh
 RUN pip install -r /work/testscripts/requirements.txt
 
 RUN chmod +x /work/runall.sh
-ENTRYPOINT /work/runall.sh
+ENTRYPOINT ["/work/runall.sh"]
