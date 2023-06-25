@@ -3,14 +3,16 @@ import json
 import os
 from typing import List
 from loguru import logger
+from retry import retry
 from config import *
 
 
 def get_program_path(n: int, avx_version: int, key: str) -> str:
     return os.path.join(EXECUTABLE_ROOT, f"recoil-bin-n{n}-avx{avx_version}/examples", EXECUTABLES[key])
 
+@retry(tries=3)
 def run_program(executable: str, args: List[str]) -> dict:
-    output = subprocess.check_output([executable] + args).strip()
+    output = subprocess.check_output([executable] + args, timeout=180).strip()
     if not output:
         return dict()
     else:
